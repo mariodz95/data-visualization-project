@@ -34,6 +34,25 @@ export const drawMap = (props) => {
       .style("fill", "yellow")
       .style("stroke", "gray")
       .style("stroke-width", 1)
-      .style("stroke-opacity", 1);
+      .style("stroke-opacity", 1)
+      .on("mouseover", function (d) {
+        var tip = "<h3>" + d.properties.name + "</h3>";
+        tooltip
+          .html(tip)
+          .style("left", d3.event.pageX + "px")
+          .style("top", d3.event.pageY + "px");
+
+        tooltip.transition().duration(500).style("opacity", 0.7);
+      })
+      .on("mouseout", function (d) {
+        tooltip.transition().duration(500).style("opacity", 0);
+      });
   });
+
+  var tooltip = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("width", 600);
 };
