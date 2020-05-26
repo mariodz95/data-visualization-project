@@ -1,11 +1,11 @@
 import * as d3 from "d3";
 
-export const lineChart = (data, lineGraphData) => {
+// ** Update data section (Called from the onclick)
+export const updateData = (data, lineGraphData) => {
   // set the dimensions and margins of the graph
-  var margin = { top: 20, right: 20, bottom: 30, left: 100 },
+  var margin = { top: 20, right: 20, bottom: 30, left: 50 },
     width = 1100 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
-
   // set the ranges
   var x = d3.scaleTime().range([0, width]);
   var y = d3.scaleLinear().range([height, 0]);
@@ -31,19 +31,7 @@ export const lineChart = (data, lineGraphData) => {
         return y(d.worldCured);
       }
     });
-
-  // append the svg obgect to the body of the page
-  // appends a 'group' element to 'svg'
-  // moves the 'group' element to the top left margin
-  var svg = d3
-    .select("body")
-    .select(".lineChart")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-  // Scale the range of the data
+  // Scale the range of the data again
   x.domain(
     d3.extent(lineGraphData, function (d) {
       return new Date(d.date);
@@ -67,39 +55,21 @@ export const lineChart = (data, lineGraphData) => {
       }
     }),
   ]);
-  // Add the valueline path.
-  svg
-    .append("path")
-    .data([lineGraphData])
-    .attr("class", "line")
-    .attr("d", valueline);
 
-  // 12. Appends a circle for each datapoint
-  svg
-    .selectAll(".dot")
-    .data(lineGraphData)
-    .enter()
-    .append("circle") // Uses the enter().append() method
-    .attr("class", "dot") // Assign a class for styling
-    .attr("cx", function (d, i) {
-      return x(i);
-    })
-    .attr("cy", function (d) {
-      return y(d.y);
-    })
-    .attr("r", 5)
-    .on("mouseover", function (a, b, c) {
-      this.attr("class", "focus");
-    })
-    .on("mouseout", function () {});
+  // Select the section we want to apply our changes to
+  var svg = d3.select("body").transition();
 
-  // Add the X Axis
+  // Make the changes
   svg
-    .append("g")
-    .attr("class", "xaxis")
-    .attr("transform", "translate(0," + height + ")")
+    .select(".line") // change the line
+    .duration(750)
+    .attr("d", valueline(lineGraphData));
+  svg
+    .select(".xaxis") // change the x axis
+    .duration(750)
     .call(d3.axisBottom(x));
-
-  // Add the Y Axis
-  svg.append("g").attr("class", "yaxis").call(d3.axisLeft(y));
+  svg
+    .select(".yaxis") // change the y axis
+    .duration(750)
+    .call(d3.axisLeft(y));
 };

@@ -3,16 +3,11 @@ import "./App.css";
 import * as d3 from "d3";
 import { drawMap } from "./drawMap";
 import Select from "react-select";
-import LineChartData from "./LineChartData";
-
-const options = [
-  { value: "croCases", label: "Hrvatska slučajevi" },
-  { value: "croDeaths", label: "Hrvatska umrli" },
-  { value: "croCured", label: "Hrvatska izliječeni" },
-  { value: "worldCases", label: "Svijet slučajevi" },
-  { value: "worldDeaths", label: "Svijet umrli" },
-  { value: "worldCured", label: "Svijet izliječeni" },
-];
+import LineChartData from "./helpers/LineChartData";
+import PieData from "./helpers/PieData";
+import { lineChart } from "./LineChart";
+import { updateData } from "./updateData";
+import { options } from "./helpers/dropDownConstants";
 
 class App extends React.Component {
   state = {
@@ -22,7 +17,7 @@ class App extends React.Component {
     lineGraphData: [],
     covidDataByPerson: [],
     selectedOption: null,
-    test: {},
+    covidStatistic: {},
   };
 
   componentDidMount() {
@@ -51,7 +46,6 @@ class App extends React.Component {
       })
       .then((data) => {
         this.setState({ covidStatus: data });
-        console.log("data", data);
         for (let i = 0; i < this.state.covidStatus.length; i++) {
           let covidCase = new LineChartData();
 
@@ -66,8 +60,7 @@ class App extends React.Component {
           this.state.lineGraphData.push(covidCase);
         }
         this.setState({ selectedOption: options[0] });
-        console.log("this", this.state.lineGraphData);
-        this.lineChart(this.state.selectedOption);
+        lineChart(this.state.selectedOption, this.state.lineGraphData);
       });
 
     fetch("https://www.koronavirus.hr/json/?action=po_osobama")
@@ -107,202 +100,25 @@ class App extends React.Component {
         covidCase.youngMedium = youngMedium;
         covidCase.oldMedium = oldMedium;
         covidCase.old = old;
-        this.setState({ test: covidCase });
+        this.setState({ covidStatistic: covidCase });
         this.drawPieChart();
+        // this.drawBarChart();
       });
   }
-
-  lineChart = (data) => {
-    // set the dimensions and margins of the graph
-    var margin = { top: 20, right: 20, bottom: 30, left: 100 },
-      width = 1100 - margin.left - margin.right,
-      height = 500 - margin.top - margin.bottom;
-
-    // set the ranges
-    var x = d3.scaleTime().range([0, width]);
-    var y = d3.scaleLinear().range([height, 0]);
-
-    // define the line
-    var valueline = d3
-      .line()
-      .x(function (d) {
-        return x(new Date(d.date));
-      })
-      .y(function (d) {
-        if (data.value === "croCases") {
-          return y(d.croCases);
-        } else if (data.value === "croDeaths") {
-          return y(d.croDeaths);
-        } else if (data.value === "croCured") {
-          return y(d.croCured);
-        } else if (data.value === "worldCases") {
-          return y(d.worldCases);
-        } else if (data.value === "worldDeaths") {
-          return y(d.worldDeaths);
-        } else if (data.value === "worldCured") {
-          return y(d.worldCured);
-        }
-      });
-
-    // append the svg obgect to the body of the page
-    // appends a 'group' element to 'svg'
-    // moves the 'group' element to the top left margin
-    var svg = d3
-      .select("body")
-      .select(".lineChart")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    // Scale the range of the data
-    x.domain(
-      d3.extent(this.state.lineGraphData, function (d) {
-        return new Date(d.date);
-      })
-    );
-    y.domain([
-      0,
-      d3.max(this.state.lineGraphData, function (d) {
-        if (data.value === "croCases") {
-          return d.croCases;
-        } else if (data.value === "croDeaths") {
-          return d.croDeaths;
-        } else if (data.value === "croCured") {
-          return d.croCured;
-        } else if (data.value === "worldCases") {
-          return d.worldCases;
-        } else if (data.value === "worldDeaths") {
-          return d.worldDeaths;
-        } else if (data.value === "worldCured") {
-          return d.worldCured;
-        }
-      }),
-    ]);
-    // Add the valueline path.
-    svg
-      .append("path")
-      .data([this.state.lineGraphData])
-      .attr("class", "line")
-      .attr("d", valueline);
-
-    // 12. Appends a circle for each datapoint
-    svg
-      .selectAll(".dot")
-      .data(this.state.lineGraphData)
-      .enter()
-      .append("circle") // Uses the enter().append() method
-      .attr("class", "dot") // Assign a class for styling
-      .attr("cx", function (d, i) {
-        return x(i);
-      })
-      .attr("cy", function (d) {
-        return y(d.y);
-      })
-      .attr("r", 5)
-      .on("mouseover", function (a, b, c) {
-        console.log(a);
-        this.attr("class", "focus");
-      })
-      .on("mouseout", function () {});
-
-    // Add the X Axis
-    svg
-      .append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
-
-    // Add the Y Axis
-    svg.append("g").attr("class", "y axis").call(d3.axisLeft(y));
-  };
-
-  // ** Update data section (Called from the onclick)
-  updateData = (data) => {
-    // set the dimensions and margins of the graph
-    var margin = { top: 20, right: 20, bottom: 30, left: 50 },
-      width = 960 - margin.left - margin.right,
-      height = 500 - margin.top - margin.bottom;
-    // set the ranges
-    var x = d3.scaleTime().range([0, width]);
-    var y = d3.scaleLinear().range([height, 0]);
-
-    // define the line
-    var valueline = d3
-      .line()
-      .x(function (d) {
-        return x(new Date(d.date));
-      })
-      .y(function (d) {
-        if (data.value === "croCases") {
-          return y(d.croCases);
-        } else if (data.value === "croDeaths") {
-          return y(d.croDeaths);
-        } else if (data.value === "croCured") {
-          return y(d.croCured);
-        } else if (data.value === "worldCases") {
-          return y(d.worldCases);
-        } else if (data.value === "worldDeaths") {
-          return y(d.worldDeaths);
-        } else if (data.value === "worldCured") {
-          return y(d.worldCured);
-        }
-      });
-    // Scale the range of the data again
-    x.domain(
-      d3.extent(this.state.lineGraphData, function (d) {
-        return new Date(d.date);
-      })
-    );
-    y.domain([
-      0,
-      d3.max(this.state.lineGraphData, function (d) {
-        if (data.value === "croCases") {
-          return d.croCases;
-        } else if (data.value === "croDeaths") {
-          return d.croDeaths;
-        } else if (data.value === "croCured") {
-          return d.croCured;
-        } else if (data.value === "worldCases") {
-          return d.worldCases;
-        } else if (data.value === "worldDeaths") {
-          return d.worldDeaths;
-        } else if (data.value === "worldCured") {
-          return d.worldCured;
-        }
-      }),
-    ]);
-
-    // Select the section we want to apply our changes to
-    var svg = d3.select("body").transition();
-
-    // Make the changes
-    svg
-      .select(".line") // change the line
-      .duration(750)
-      .attr("d", valueline(this.state.lineGraphData));
-    svg
-      .select(".x.axis") // change the x axis
-      .duration(750)
-      .call(d3.axisBottom(x));
-    svg
-      .select(".y.axis") // change the y axis
-      .duration(750)
-      .call(d3.axisLeft(y));
-  };
 
   // drawBarChart() {
   //   var data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   //   var width = 500;
   //   var height = 500;
+  //   console.log("tsdasd", this.state.covidStatistic);
   //   var svg = d3
   //     .select("body")
-  //     .append("svg")
+  //     .select(".barChart")
   //     .attr("width", width)
   //     .attr("height", height);
   //   var barchart = svg
   //     .selectAll("rect")
-  //     .data(this.state.casesInCroatia)
+  //     .data(data)
   //     .enter()
   //     .append("rect")
   //     .attr("x", function (d, i) {
@@ -316,14 +132,6 @@ class App extends React.Component {
   //       return d * 50;
   //     })
   //     .attr("fill", "blue");
-  //   var width = 500;
-  //   var height = 500;
-
-  //   var svg = d3
-  //     .select("body")
-  //     .append("svg")
-  //     .attr("width", width)
-  //     .attr("height", height);
   // }
 
   drawPieChart() {
@@ -346,12 +154,13 @@ class App extends React.Component {
       .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
     // Create dummy data
-    var data = this.state.test;
+    var data = this.state.covidStatistic;
 
+    console.log("data", data);
     // set the color scale
     var color = d3
       .scaleOrdinal()
-      .domain(data)
+      .domain([data])
       .range(["#FF8C00", "#1E90FF", "#228B22", "#4B0082", "#800000"]);
 
     // Compute the position of each group on the pie:
@@ -405,10 +214,9 @@ class App extends React.Component {
         return data;
       });
   }
-
   handleChange = (selectedOption) => {
     this.setState({ selectedOption });
-    this.updateData(selectedOption);
+    updateData(selectedOption, this.state.lineGraphData);
   };
 
   render() {
@@ -450,25 +258,10 @@ class App extends React.Component {
         <svg className="lineChart"></svg>
         <br />
         <svg className="pieChart"></svg>
+        <br />
+        <br />
       </React.Fragment>
     );
-  }
-}
-
-class PieData {
-  constructor(young, youngMedium, oldMedium, old) {
-    this.young = young;
-    this.youngMedium = youngMedium;
-    this.oldMedium = oldMedium;
-    this.old = old;
-  }
-}
-
-class DataByState {
-  constructor(state, infected, deaths) {
-    this.state = state;
-    this.infected = infected;
-    this.deaths = deaths;
   }
 }
 
