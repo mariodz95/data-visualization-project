@@ -14,7 +14,7 @@ export const drawMap = (props) => {
   var path = d3.geoPath().projection(projection);
   var svg = d3
     .select("body")
-    .append("svg")
+    .select(".map")
     .attr("width", width)
     .attr("height", height)
     .style("background", "black");
@@ -36,7 +36,25 @@ export const drawMap = (props) => {
       .style("stroke-width", 1)
       .style("stroke-opacity", 1)
       .on("mouseover", function (d) {
-        var tip = "<h3>" + d.properties.name + "</h3>";
+        let displayData;
+        for (let i = 0; i < props.length; i++) {
+          if (
+            props[i].Zupanija.substring(0, 2) ===
+            d.properties.name.substring(0, 2)
+          ) {
+            displayData = props[i];
+          }
+        }
+        var tip =
+          "<h3>" +
+          d.properties.name +
+          "</h3>" +
+          "<br>" +
+          "Broj zaraženih: " +
+          displayData.broj_zarazenih +
+          "<br>" +
+          "Broj umrlih: " +
+          displayData.broj_umrlih;
         tooltip
           .html(tip)
           .style("left", d3.event.pageX + "px")
