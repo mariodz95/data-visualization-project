@@ -5,9 +5,12 @@ import { drawMap } from "./drawMap";
 import Select from "react-select";
 import LineChartData from "./helpers/LineChartData";
 import PieData from "./helpers/PieData";
+import GenderData from "./helpers/GenderData";
 import { lineChart } from "./LineChart";
 import { updateData } from "./updateData";
 import { options } from "./helpers/dropDownConstants";
+import covid from "./covid.png"; // Tell Webpack this JS file uses this image
+import Container from "react-bootstrap/Container";
 
 class App extends React.Component {
   state = {
@@ -18,6 +21,9 @@ class App extends React.Component {
     covidDataByPerson: [],
     selectedOption: null,
     covidStatistic: {},
+    infectedByGender: [],
+    gender: false,
+    update: false,
   };
 
   componentDidMount() {
@@ -71,6 +77,8 @@ class App extends React.Component {
         this.setState({ covidDataByPerson: data });
         const todayDate = new Date().getFullYear();
         let covidCase = new PieData();
+        let genderData = new GenderData();
+
         let male = 0;
         let female = 0;
         let years;
@@ -96,12 +104,15 @@ class App extends React.Component {
             female++;
           }
         }
+        genderData.male = male;
+        genderData.female = female;
+        this.setState({ infectedByGender: genderData });
         covidCase.young = young;
         covidCase.youngMedium = youngMedium;
         covidCase.oldMedium = oldMedium;
         covidCase.old = old;
         this.setState({ covidStatistic: covidCase });
-        this.drawPieChart();
+        this.drawPieChart(false, false);
         // this.drawBarChart();
       });
   }
@@ -134,8 +145,26 @@ class App extends React.Component {
   //     .attr("fill", "blue");
   // }
 
-  drawPieChart() {
+  drawPieChart(test, gender) {
+    if (test === true) {
+      d3.select(".pieChart").remove();
+      d3.select(".legend").remove();
+
+      d3.select("#pie").append("svg").attr("class", "pieChart");
+      d3.select("#legend")
+        .append("svg")
+        .attr("class", "legend")
+        .attr("height", 300);
+    }
     // set the dimensions and margins of the graph
+    // create a list of keys
+    var keys = null;
+    if (gender === false) {
+      keys = ["0-18", "18-35", "35-65", "65<"];
+    } else {
+      keys = ["muškarci", "žene"];
+    }
+    console.log("keys", keys);
 
     var width = 450;
     var height = 450;
@@ -154,14 +183,18 @@ class App extends React.Component {
       .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
     // Create dummy data
-    var data = this.state.covidStatistic;
+    var data = gender ? this.state.infectedByGender : this.state.covidStatistic;
 
-    console.log("data", data);
     // set the color scale
-    var color = d3
-      .scaleOrdinal()
-      .domain([data])
-      .range(["#FF8C00", "#1E90FF", "#228B22", "#4B0082", "#800000"]);
+    var color = null;
+    if (gender === false) {
+      color = d3
+        .scaleOrdinal()
+        .domain([data])
+        .range(["#1E90FF", "#228B22", "#4B0082", "#800000"]);
+    } else {
+      color = d3.scaleOrdinal().domain([data]).range(["#FFB6C1", "#4169E1"]);
+    }
 
     // Compute the position of each group on the pie:
     var pie = d3.pie().value(function (d) {
@@ -183,46 +216,72 @@ class App extends React.Component {
       .style("stroke-width", "2px")
       .style("opacity", 0.7);
 
-    var legend = svg
-      .selectAll(".legend-entry")
-      .data(data)
-      .enter()
-      .append("g")
-      .attr("class", "legend-entry");
+    // select the svg area
+    var SVG = d3.select(".legend");
 
-    legend
+    // Add one dot in the legend for each name.
+    var size = 20;
+    SVG.selectAll("mydots")
+      .data(keys)
+      .enter()
       .append("rect")
-      .attr("class", "legend-rect")
-      .attr("x", 0)
+      .attr("x", 100)
       .attr("y", function (d, i) {
-        return i * 20;
-      })
-      .attr("width", 10)
-      .attr("height", 10)
-      .attr("fill", function (d) {
-        return color(data);
+        console.log("d", d);
+        return 100 + i * (size + 5);
+      }) // 100 is where the first dot appears. 25 is the distance between dots
+      .attr("width", size)
+      .attr("height", size)
+      .attr("class", "rec")
+      .style("fill", function (d) {
+        return color(d);
       });
 
-    legend
+    // Add one dot in the legend for each name.
+    SVG.selectAll("mylabels")
+      .data(keys)
+      .enter()
       .append("text")
-      .attr("class", "legend-text")
-      .attr("x", 25)
+      .attr("x", 100 + size * 1.2)
       .attr("y", function (d, i) {
-        return i * 20;
+        console.log("d", d);
+        return 100 + i * (size + 5) + size / 2;
+      }) // 100 is where the first dot appears. 25 is the distance between dots
+      .style("fill", function (d) {
+        return color(d);
       })
       .text(function (d) {
-        return data;
-      });
+        return d;
+      })
+      .attr("class", "tex")
+      .attr("text-anchor", "left")
+      .style("alignment-baseline", "middle");
   }
+
   handleChange = (selectedOption) => {
     this.setState({ selectedOption });
     updateData(selectedOption, this.state.lineGraphData);
+  };
+
+  changePieData1 = (selectedOption) => {
+    this.setState({ gender: false });
+    this.setState({ update: true });
+    this.drawPieChart(true, false);
+  };
+
+  changePieData2 = () => {
+    this.setState({ gender: true });
+    this.setState({ update: true });
+
+    console.log("gender", this.state.gender);
+    this.drawPieChart(true, true);
   };
 
   render() {
     const { selectedOption } = this.state;
     return (
       <React.Fragment>
+        <img className="logo" src={covid} alt="Logo" />
         <h1>Covid-19 Statistic</h1>
         {this.state.lastData !== null
           ? this.state.lastData.map((item) => (
@@ -257,8 +316,20 @@ class App extends React.Component {
         </div>
         <svg className="lineChart"></svg>
         <br />
-        <svg className="pieChart"></svg>
+        <h2>Zaraženi po godinama:</h2>
+        <button onClick={this.changePieData1}>Godine</button>
+        <button onClick={this.changePieData2}>Spol</button>
         <br />
+        <div className="row">
+          <div className="column" id="pie">
+            <svg className="pieChart"></svg>
+          </div>
+          <div className="column" id="legend">
+            <svg className="legend" height={300} width={450}></svg>
+          </div>
+        </div>
+        <br />
+
         <br />
       </React.Fragment>
     );

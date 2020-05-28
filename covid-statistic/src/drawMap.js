@@ -2,6 +2,7 @@ import * as d3 from "d3";
 import * as topojson from "topojson-client";
 
 export const drawMap = (props) => {
+  var opacity = d3.scaleLinear().domain([0, 700]).range([0.4, 1]);
   var width = 960;
   var height = 700;
   var projection = d3
@@ -31,6 +32,16 @@ export const drawMap = (props) => {
         return d.id;
       })
       .attr("d", path)
+      .style("fill-opacity", function (d) {
+        for (let i = 0; i < props.length; i++) {
+          if (
+            props[i].Zupanija.substring(0, 2) ===
+            d.properties.name.substring(0, 2)
+          ) {
+            return opacity(props[i].broj_zarazenih);
+          }
+        }
+      })
       .style("fill", "yellow")
       .style("stroke", "gray")
       .style("stroke-width", 1)
