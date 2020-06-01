@@ -1,6 +1,8 @@
 import * as d3 from "d3";
 
 export const drawPieChart = (update, gender, data) => {
+  let total = null;
+
   if (update === true) {
     d3.select(".pieChart").remove();
     d3.select(".legend").remove();
@@ -16,8 +18,10 @@ export const drawPieChart = (update, gender, data) => {
   var keys = null;
   if (gender === false) {
     keys = ["0-18", "18-35", "35-65", "65<"];
+    total = data.old + data.oldMedium + data.young + data.youngMedium;
   } else {
     keys = ["Muškarci", "Žene"];
+    total = data.male + data.female;
   }
   var width = 450;
   var height = 450;
@@ -35,9 +39,6 @@ export const drawPieChart = (update, gender, data) => {
     .append("g")
     .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
-  //   // Create dummy data
-  //   var data = gender ? this.state.infectedByGender : this.state.covidStatistic;
-
   // set the color scale
   var color = null;
   if (gender === false) {
@@ -51,6 +52,7 @@ export const drawPieChart = (update, gender, data) => {
 
   // Compute the position of each group on the pie:
   var pie = d3.pie().value(function (d) {
+    let percentage = (d.value / total) * 100;
     return d.value;
   });
   var data_ready = pie(d3.entries(data));
@@ -69,6 +71,29 @@ export const drawPieChart = (update, gender, data) => {
     .style("stroke-width", "2px")
     .style("opacity", 0.7);
 
+  var arc = d3.arc().innerRadius(0).outerRadius(radius);
+
+  // shape helper to build arcs:
+  var arcGenerator = d3
+    .arc()
+    .innerRadius(0)
+    .outerRadius(radius + 75);
+
+  // Now add the annotation. Use the centroid method to get the best coordinates
+  svg
+    .selectAll("mySlices")
+    .data(data_ready)
+    .enter()
+    .append("text")
+    .text(function (d) {
+      return Number((d.value / total) * 100).toFixed(2) + " %";
+    })
+    .attr("transform", function (d) {
+      return "translate(" + arcGenerator.centroid(d) + ")";
+    })
+    .style("text-anchor", "middle")
+    .style("font-size", 25);
+
   // select the svg area
   var SVG = d3.select(".legend");
 
@@ -80,7 +105,6 @@ export const drawPieChart = (update, gender, data) => {
     .append("rect")
     .attr("x", 100)
     .attr("y", function (d, i) {
-      console.log("d", d);
       return 100 + i * (size + 5);
     }) // 100 is where the first dot appears. 25 is the distance between dots
     .attr("width", size)

@@ -1,6 +1,5 @@
 import React from "react";
 import "./App.css";
-import * as d3 from "d3";
 import { drawMap } from "./drawMap";
 import Select from "react-select";
 import LineChartData from "./helpers/LineChartData";
@@ -11,6 +10,7 @@ import { updateData } from "./updateData";
 import { options } from "./helpers/dropDownConstants";
 import covid from "./covid.png";
 import { drawPieChart } from "./pieChart";
+
 class App extends React.Component {
   state = {
     lastData: null,
@@ -23,6 +23,9 @@ class App extends React.Component {
     infectedByGender: [],
     gender: false,
     update: false,
+    states: [],
+    statesInfected: [],
+    statesDeaths: [],
   };
 
   componentDidMount() {
@@ -39,9 +42,17 @@ class App extends React.Component {
         return data.json();
       })
       .then((data) => {
+        console.log("zadnji podaci ", data[0].PodaciDetaljno);
         for (let i = 0; i < data[0].PodaciDetaljno.length; i++) {
           this.state.dataByState.push(data[0].PodaciDetaljno[i]);
+          this.state.states.push(data[0].PodaciDetaljno[i].Zupanija);
+          this.state.statesInfected.push(
+            data[0].PodaciDetaljno[i].broj_zarazenih
+          );
+          this.state.statesDeaths.push(data[0].PodaciDetaljno[i].broj_umrlih);
         }
+        console.log("zadnji podaci ", this.state.states);
+
         drawMap(this.state.dataByState);
       });
 
@@ -113,6 +124,12 @@ class App extends React.Component {
         this.setState({ covidStatistic: covidCase });
         drawPieChart(false, false, this.state.covidStatistic);
       });
+
+    fetch("https://www.koronavirus.hr/json/?action=po_danima_zupanijama")
+      .then((data) => {
+        return data.json();
+      })
+      .then((data) => {});
   }
 
   handleChange = (selectedOption) => {
@@ -120,13 +137,13 @@ class App extends React.Component {
     updateData(selectedOption, this.state.lineGraphData);
   };
 
-  changePieData1 = (selectedOption) => {
+  updateYearData = (selectedOption) => {
     this.setState({ gender: false });
     this.setState({ update: true });
     drawPieChart(true, false, this.state.covidStatistic);
   };
 
-  changePieData2 = () => {
+  updateGenderData = () => {
     this.setState({ gender: true });
     this.setState({ update: true });
     drawPieChart(true, true, this.state.infectedByGender);
@@ -159,32 +176,38 @@ class App extends React.Component {
               </React.Fragment>
             ))
           : "No data"}
-
         <svg className="map"></svg>
         <br />
-        <div className="select">
-          <Select
-            value={selectedOption}
-            onChange={this.handleChange}
-            options={options}
-          />
-        </div>
-        <svg className="lineChart"></svg>
-        <br />
-        <h2>Zaraženi-statistika:</h2>
-        <button onClick={this.changePieData1}>Godine</button>
-        <button onClick={this.changePieData2}>Spol</button>
-        <br />
-        <div className="row">
-          <div className="column" id="pie">
-            <svg className="pieChart"></svg>
+        <div className="chartDiv">
+          <div className="select">
+            <Select
+              value={selectedOption}
+              onChange={this.handleChange}
+              options={options}
+            />
           </div>
-          <div className="column" id="legend">
-            <svg className="legend" height={300} width={450}></svg>
-          </div>
+          <svg className="lineChart"></svg>
         </div>
         <br />
-
+        <div className="chartDiv">
+          <h2>Zaraženi-statistika:</h2>
+          <button className="button1" onClick={this.updateYearData}>
+            Godine
+          </button>
+          <button className="button2" onClick={this.updateGenderData}>
+            Spol
+          </button>
+          <br />
+          <div className="row">
+            <div className="column" id="pie">
+              <svg className="pieChart"></svg>
+            </div>
+            <div className="column" id="legend">
+              <svg className="legend" height={300} width={450}></svg>
+            </div>
+          </div>
+        </div>
+        <br />
         <br />
       </React.Fragment>
     );
