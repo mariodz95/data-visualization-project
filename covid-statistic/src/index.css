@@ -20,7 +20,7 @@ p {
   color: white;
 }
 
-.tooltip {
+.tooltipMap {
   position: absolute;
   max-width: 500px;
   height: auto;
@@ -137,4 +137,24 @@ tr {
 }
 .pieChart {
   float: right;
+}
+
+div.tooltip {
+  position: absolute;
+  text-align: center;
+  padding: 5px;
+  font-size: 20px;
+  font-weight: bold;
+  background-color: white;
+  border: 0px;
+  border-radius: 8px;
+}
+
+.tooltip p {
+  margin: 0;
+  padding: 0;
+}
+
+circle {
+  fill: rgb(172, 131, 131);
 }

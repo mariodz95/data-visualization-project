@@ -6,12 +6,11 @@ import Select from "react-select";
 import LineChartData from "./helpers/LineChartData";
 import PieData from "./helpers/PieData";
 import GenderData from "./helpers/GenderData";
-import { lineChart } from "./LineChart";
+import { lineChart } from "./lineChart";
 import { updateData } from "./updateData";
 import { options } from "./helpers/dropDownConstants";
-import covid from "./covid.png"; // Tell Webpack this JS file uses this image
-import Container from "react-bootstrap/Container";
-
+import covid from "./covid.png";
+import { drawPieChart } from "./pieChart";
 class App extends React.Component {
   state = {
     lastData: null,
@@ -112,150 +111,8 @@ class App extends React.Component {
         covidCase.oldMedium = oldMedium;
         covidCase.old = old;
         this.setState({ covidStatistic: covidCase });
-        this.drawPieChart(false, false);
-        // this.drawBarChart();
+        drawPieChart(false, false, this.state.covidStatistic);
       });
-  }
-
-  // drawBarChart() {
-  //   var data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  //   var width = 500;
-  //   var height = 500;
-  //   console.log("tsdasd", this.state.covidStatistic);
-  //   var svg = d3
-  //     .select("body")
-  //     .select(".barChart")
-  //     .attr("width", width)
-  //     .attr("height", height);
-  //   var barchart = svg
-  //     .selectAll("rect")
-  //     .data(data)
-  //     .enter()
-  //     .append("rect")
-  //     .attr("x", function (d, i) {
-  //       return 50 * i;
-  //     })
-  //     .attr("y", function (d) {
-  //       return height - d * 50;
-  //     })
-  //     .attr("width", 40)
-  //     .attr("height", function (d) {
-  //       return d * 50;
-  //     })
-  //     .attr("fill", "blue");
-  // }
-
-  drawPieChart(test, gender) {
-    if (test === true) {
-      d3.select(".pieChart").remove();
-      d3.select(".legend").remove();
-
-      d3.select("#pie").append("svg").attr("class", "pieChart");
-      d3.select("#legend")
-        .append("svg")
-        .attr("class", "legend")
-        .attr("height", 300);
-    }
-    // set the dimensions and margins of the graph
-    // create a list of keys
-    var keys = null;
-    if (gender === false) {
-      keys = ["0-18", "18-35", "35-65", "65<"];
-    } else {
-      keys = ["muškarci", "žene"];
-    }
-    console.log("keys", keys);
-
-    var width = 450;
-    var height = 450;
-    var margin = 40;
-
-    // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
-    var radius = Math.min(width, height) / 2 - margin;
-
-    // append the svg object to the div called 'my_dataviz'
-    var svg = d3
-      .select("body")
-      .select(".pieChart")
-      .attr("width", width)
-      .attr("height", height)
-      .append("g")
-      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
-    // Create dummy data
-    var data = gender ? this.state.infectedByGender : this.state.covidStatistic;
-
-    // set the color scale
-    var color = null;
-    if (gender === false) {
-      color = d3
-        .scaleOrdinal()
-        .domain([data])
-        .range(["#1E90FF", "#228B22", "#4B0082", "#800000"]);
-    } else {
-      color = d3.scaleOrdinal().domain([data]).range(["#FFB6C1", "#4169E1"]);
-    }
-
-    // Compute the position of each group on the pie:
-    var pie = d3.pie().value(function (d) {
-      return d.value;
-    });
-    var data_ready = pie(d3.entries(data));
-
-    // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
-    svg
-      .selectAll("whatever")
-      .data(data_ready)
-      .enter()
-      .append("path")
-      .attr("d", d3.arc().innerRadius(0).outerRadius(radius))
-      .attr("fill", function (d) {
-        return color(d.data.key);
-      })
-      .attr("stroke", "black")
-      .style("stroke-width", "2px")
-      .style("opacity", 0.7);
-
-    // select the svg area
-    var SVG = d3.select(".legend");
-
-    // Add one dot in the legend for each name.
-    var size = 20;
-    SVG.selectAll("mydots")
-      .data(keys)
-      .enter()
-      .append("rect")
-      .attr("x", 100)
-      .attr("y", function (d, i) {
-        console.log("d", d);
-        return 100 + i * (size + 5);
-      }) // 100 is where the first dot appears. 25 is the distance between dots
-      .attr("width", size)
-      .attr("height", size)
-      .attr("class", "rec")
-      .style("fill", function (d) {
-        return color(d);
-      });
-
-    // Add one dot in the legend for each name.
-    SVG.selectAll("mylabels")
-      .data(keys)
-      .enter()
-      .append("text")
-      .attr("x", 100 + size * 1.2)
-      .attr("y", function (d, i) {
-        console.log("d", d);
-        return 100 + i * (size + 5) + size / 2;
-      }) // 100 is where the first dot appears. 25 is the distance between dots
-      .style("fill", function (d) {
-        return color(d);
-      })
-      .text(function (d) {
-        return d;
-      })
-      .attr("class", "tex")
-      .attr("text-anchor", "left")
-      .style("alignment-baseline", "middle");
   }
 
   handleChange = (selectedOption) => {
@@ -266,15 +123,13 @@ class App extends React.Component {
   changePieData1 = (selectedOption) => {
     this.setState({ gender: false });
     this.setState({ update: true });
-    this.drawPieChart(true, false);
+    drawPieChart(true, false, this.state.covidStatistic);
   };
 
   changePieData2 = () => {
     this.setState({ gender: true });
     this.setState({ update: true });
-
-    console.log("gender", this.state.gender);
-    this.drawPieChart(true, true);
+    drawPieChart(true, true, this.state.infectedByGender);
   };
 
   render() {
@@ -290,14 +145,14 @@ class App extends React.Component {
                 <table>
                   <tbody>
                     <tr>
-                      <td>Infected in Croatia: {item.SlucajeviHrvatska}</td>
-                      <td>Deaths in Croatia {item.UmrliHrvatska}</td>
-                      <td>Recovered in Croatia {item.IzlijeceniHrvatska}</td>
+                      <td>Zaraženi u Hrvatskoj: {item.SlucajeviHrvatska}</td>
+                      <td>Umrli u Hrvatskoj: {item.UmrliHrvatska}</td>
+                      <td>Izliječeni u Hrvatskoj: {item.IzlijeceniHrvatska}</td>
                     </tr>
                     <tr>
-                      <td>Infected in world: {item.SlucajeviSvijet}</td>
-                      <td>Deaths in world: {item.UmrliSvijet}</td>
-                      <td>Recovered in world: {item.IzlijeceniSvijet}</td>
+                      <td>Zaraženi u svijetu: {item.SlucajeviSvijet}</td>
+                      <td>Umrli u svijetu: {item.UmrliSvijet}</td>
+                      <td>Izliječeni u svijetu: {item.IzlijeceniSvijet}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -316,7 +171,7 @@ class App extends React.Component {
         </div>
         <svg className="lineChart"></svg>
         <br />
-        <h2>Zaraženi po godinama:</h2>
+        <h2>Zaraženi-statistika:</h2>
         <button onClick={this.changePieData1}>Godine</button>
         <button onClick={this.changePieData2}>Spol</button>
         <br />

@@ -1,6 +1,21 @@
 import * as d3 from "d3";
 
 export const lineChart = (data, lineGraphData) => {
+  var tooltip = null;
+  if (data.value === "croCases") {
+    tooltip = "Hrvatska zaraženi: ";
+  } else if (data.value === "croDeaths") {
+    tooltip = "Hrvatska umrli: ";
+  } else if (data.value === "croCured") {
+    tooltip = "Hrvatska izliječeni: ";
+  } else if (data.value === "worldCases") {
+    tooltip = "Svijet zaraženi: ";
+  } else if (data.value === "worldDeaths") {
+    tooltip = "Svijet umrli: ";
+  } else if (data.value === "worldCured") {
+    tooltip = "Svijet izliječeni: ";
+  }
+
   // set the dimensions and margins of the graph
   var margin = { top: 20, right: 20, bottom: 30, left: 100 },
     width = 1100 - margin.left - margin.right,
@@ -74,24 +89,38 @@ export const lineChart = (data, lineGraphData) => {
     .attr("class", "line")
     .attr("d", valueline);
 
-  // 12. Appends a circle for each datapoint
-  svg
-    .selectAll(".dot")
+  var div = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  // add the dots with tooltips
+  var fixeddot = svg
+    .selectAll("dot")
     .data(lineGraphData)
     .enter()
-    .append("circle") // Uses the enter().append() method
-    .attr("class", "dot") // Assign a class for styling
-    .attr("cx", function (d, i) {
-      return x(i);
+    .append("circle")
+    .attr("r", 5)
+    .attr("class", "dots");
+
+  fixeddot
+    .attr("cx", function (d) {
+      return x(new Date(d.date));
     })
     .attr("cy", function (d) {
-      return y(d.y);
+      return y(d.croCases);
     })
-    .attr("r", 5)
-    .on("mouseover", function (a, b, c) {
-      this.attr("class", "focus");
+    .on("mouseover", function (d) {
+      div.transition().duration(200).style("opacity", 0.9);
+      div
+        .html("Datum: " + d.date + "<br>Cro cases: " + d.croCases)
+        .style("left", d3.event.pageX - 300 + "px")
+        .style("top", d3.event.pageY - 75 + "px");
     })
-    .on("mouseout", function () {});
+    .on("mouseout", function (d) {
+      div.transition().duration(200).style("opacity", 0);
+    });
 
   // Add the X Axis
   svg
