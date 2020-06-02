@@ -5,7 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: rgb(0, 0, 0);
+  background-color: rgb(155, 93, 93);
   text-align: center;
 }
 
@@ -191,4 +191,19 @@ circle {
 
 .map {
   margin-top: 200px;
+}
+
+.bar {
+  fill: steelblue;
+}
+
+.barChart {
+  margin-bottom: 200px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
 }
