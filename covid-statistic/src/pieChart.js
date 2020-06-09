@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 
 export const drawPieChart = (update, gender, data) => {
+  //Za izradu legend https://www.d3-graph-gallery.com/graph/custom_legend.html
   let total = null;
 
   if (update === true) {
@@ -11,7 +12,7 @@ export const drawPieChart = (update, gender, data) => {
     d3.select("#legend")
       .append("svg")
       .attr("class", "legend")
-      .attr("height", 300);
+      .attr("height", 200);
   }
   // set the dimensions and margins of the graph
   // create a list of keys
@@ -30,7 +31,6 @@ export const drawPieChart = (update, gender, data) => {
   // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
   var radius = Math.min(width, height) / 2 - margin;
 
-  // append the svg object to the div called 'my_dataviz'
   var svg = d3
     .select("body")
     .select(".pieChart")
@@ -45,7 +45,7 @@ export const drawPieChart = (update, gender, data) => {
     color = d3
       .scaleOrdinal()
       .domain([data])
-      .range(["#DC143C", "#00BFFF", "#FFFF00", "#00FF00"]);
+      .range(["green", "red", "orange", "brown"]);
   } else {
     color = d3.scaleOrdinal().domain([data]).range(["#DC143C", "#00BFFF"]);
   }

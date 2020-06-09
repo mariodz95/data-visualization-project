@@ -2,9 +2,12 @@ import * as d3 from "d3";
 import * as topojson from "topojson-client";
 
 export const drawMap = (props) => {
+  //Za iscrtavanje mape korišten je priričnik za LV  i
+  //https://mono.software/2017/08/10/d3-js-map-of-croatia/
   var opacity = d3.scaleLinear().domain([0, 700]).range([0.4, 1]);
   var width = 960;
   var height = 700;
+
   var projection = d3
     .geoMercator()
     .center([0, 10])
@@ -13,16 +16,18 @@ export const drawMap = (props) => {
     .rotate([-180, 0]);
 
   var path = d3.geoPath().projection(projection);
+
   var svg = d3
     .select("body")
     .select(".map")
     .attr("width", width)
     .attr("height", height)
-    .style("background", "black");
+    .style("background", "#3b3434");
 
   d3.json("cro_regv3.json").then(function (cro) {
     var data = topojson.feature(cro, cro.objects.layer1);
-    var states = svg
+
+    svg
       .selectAll("path.county")
       .data(data.features)
       .enter()
@@ -42,7 +47,7 @@ export const drawMap = (props) => {
           }
         }
       })
-      .style("fill", "yellow")
+      .style("fill", "red")
       .style("stroke", "gray")
       .style("stroke-width", 1)
       .style("stroke-opacity", 1)

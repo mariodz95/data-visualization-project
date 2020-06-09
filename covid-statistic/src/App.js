@@ -12,6 +12,7 @@ import { options } from "./helpers/dropDownConstants";
 import covid from "./covid.png";
 import { drawPieChart } from "./pieChart";
 import * as d3 from "d3";
+import NumberFormat from "react-number-format";
 
 class App extends React.Component {
   state = {
@@ -58,8 +59,6 @@ class App extends React.Component {
           );
           this.state.barChartData.push(test);
         }
-        console.log("zadnji podaci ", this.state.barChartData);
-
         drawMap(this.state.dataByState);
         this.drawBarChart();
       });
@@ -141,17 +140,20 @@ class App extends React.Component {
   }
 
   drawBarChart = () => {
-    const width = 800;
-    const height = 450;
+    //https://vijayt.com/post/plotting-bar-chart-d3-react/
+    const width = 1100;
+    const height = 500;
+
     const svg = d3
       .select("body")
       .select(".barChart")
       .attr("id", "chart")
       .attr("width", width)
       .attr("height", height);
+
     const margin = {
       top: 60,
-      bottom: 100,
+      bottom: 210,
       left: 80,
       right: 40,
     };
@@ -163,21 +165,28 @@ class App extends React.Component {
 
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
+
     this.plot(chart, chartWidth, chartHeight);
   };
 
   plot = (chart, chartWidth, chartHeight) => {
-    const width = 800;
-    const height = 300;
+    const width = chartWidth;
+    const height = chartHeight;
+
     const xScale = d3
       .scaleBand()
       .domain(this.state.barChartData.map((d) => d.state))
       .range([0, width]);
+
     const yScale = d3
       .scaleLinear()
       .domain([0, d3.max(this.state.barChartData, (d) => d.value)])
       .range([height, 0]);
-    const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var myColor = d3
+      .scaleSequential()
+      .domain([1, 24])
+      .interpolator(d3.interpolateViridis);
 
     chart
       .selectAll(".bar")
@@ -189,71 +198,55 @@ class App extends React.Component {
       .attr("y", (d) => yScale(d.value))
       .attr("height", (d) => height - yScale(d.value))
       .attr("width", (d) => xScale.bandwidth())
-      .style("fill", (d, i) => colorScale(i));
+      .style("fill", (d, i) => myColor(i));
 
     chart
-      .selectAll(".bar-label")
+      .selectAll(".barLabel")
       .data(this.state.barChartData)
       .enter()
       .append("text")
-      .classed("bar-label", true)
+      .classed("barLabel", true)
+      .style("fill", "white")
       .attr("x", (d) => xScale(d.state) + xScale.bandwidth() / 2)
-      .attr("dx", 0)
+      .attr("dx", -10)
       .attr("y", (d) => yScale(d.value))
       .attr("dy", -6)
       .text((d) => d.value);
 
     const xAxis = d3.axisBottom().ticks(25).scale(xScale);
 
-    // Add the X Axis
     chart
       .append("g")
-      .attr("class", "x axis")
+      .attr("class", "xAxis")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis)
       .selectAll("text")
       .style("text-anchor", "end")
+      .style("font-size", "14px")
       .attr("dx", "-.8em")
       .attr("dy", ".15em")
       .attr("transform", function (d) {
         return "rotate(-65)";
       });
 
-    // chart
-    //   .append("g")
-    //   .classed("x axis", true)
-    //   .attr("transform", `translate(0,${height})`)
-    //   .call(xAxis);
-
     const yAxis = d3.axisLeft().ticks(5).scale(yScale);
 
     chart
       .append("g")
-      .classed("y axis", true)
+      .classed("yAxis", true)
       .attr("transform", "translate(0,0)")
       .call(yAxis);
 
-    // chart
-    //   .select(".x.axis")
-    //   .append("text")
-    //   .attr("x", width / 2)
-    //   .attr("y", 60)
-    //   .attr("transform", `translate(0, ${height})`)
-    //   .attr("fill", "#000")
-    //   .style("font-size", "1px")
-    //   .style("text-anchor", "middle")
-    //   .text("Županija");
-
     chart
-      .select(".y.axis")
+      .select(".yAxis")
       .append("text")
       .attr("x", 0)
       .attr("y", 0)
       .attr("transform", `translate(-50, ${height / 2}) rotate(-90)`)
-      .attr("fill", "#000")
-      .style("font-size", "20px")
+      .attr("fill", "white")
+      .style("font-size", "14px")
       .style("text-anchor", "middle")
-      .text("Government Expenditure in Billion Dollars");
+      .text("Broj zaraženih");
 
     const yGridlines = d3
       .axisLeft()
@@ -264,12 +257,13 @@ class App extends React.Component {
 
     chart.append("g").call(yGridlines).classed("gridline", true);
   };
+
   handleChange = (selectedOption) => {
     this.setState({ selectedOption });
     updateData(selectedOption, this.state.lineGraphData);
   };
 
-  updateYearData = (selectedOption) => {
+  updateYearData = () => {
     this.setState({ gender: false });
     this.setState({ update: true });
     drawPieChart(true, false, this.state.covidStatistic);
@@ -286,22 +280,64 @@ class App extends React.Component {
     return (
       <React.Fragment>
         <img className="logo" src={covid} alt="Logo" />
-        <h1>Covid-19 Statistic</h1>
+        <h1>Covid-19</h1>
         {this.state.lastData !== null
           ? this.state.lastData.map((item) => (
               <React.Fragment>
-                <h3 key={item.Datum}>Last update: {item.Datum}</h3>
+                <h4 key={item.Datum}>Ažurirano: {item.Datum}</h4>
                 <table>
-                  <tbody>
+                  <tbody className="tableBody">
                     <tr>
-                      <td>Zaraženi u Hrvatskoj: {item.SlucajeviHrvatska}</td>
-                      <td>Umrli u Hrvatskoj: {item.UmrliHrvatska}</td>
-                      <td>Izliječeni u Hrvatskoj: {item.IzlijeceniHrvatska}</td>
+                      <td>
+                        Zaraženi u Hrvatskoj:{" "}
+                        <NumberFormat
+                          value={item.SlucajeviHrvatska}
+                          displayType={"text"}
+                          thousandSeparator={true}
+                        />
+                      </td>
+                      <td>
+                        Umrli u Hrvatskoj:{" "}
+                        <NumberFormat
+                          value={item.UmrliHrvatska}
+                          displayType={"text"}
+                          thousandSeparator={true}
+                        />
+                      </td>
+                      <td>
+                        Izliječeni u Hrvatskoj:{" "}
+                        <NumberFormat
+                          value={item.IzlijeceniHrvatska}
+                          displayType={"text"}
+                          thousandSeparator={true}
+                        />
+                      </td>
                     </tr>
                     <tr>
-                      <td>Zaraženi u svijetu: {item.SlucajeviSvijet}</td>
-                      <td>Umrli u svijetu: {item.UmrliSvijet}</td>
-                      <td>Izliječeni u svijetu: {item.IzlijeceniSvijet}</td>
+                      <td>
+                        Zaraženi u svijetu:{" "}
+                        <NumberFormat
+                          value={item.SlucajeviSvijet}
+                          displayType={"text"}
+                          thousandSeparator={true}
+                        />
+                      </td>
+                      <td>
+                        Umrli u svijetu:{" "}
+                        <NumberFormat
+                          value={item.UmrliSvijet}
+                          displayType={"text"}
+                          thousandSeparator={true}
+                        />
+                      </td>
+                      <td>
+                        Izliječeni u svijetu:{" "}
+                        <NumberFormat
+                          value={item.IzlijeceniSvijet}
+                          displayType={"text"}
+                          thousandSeparator={true}
+                        />{" "}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -309,6 +345,8 @@ class App extends React.Component {
             ))
           : "No data"}
         <svg className="map"></svg>
+        <br />
+        <svg className="barChart"></svg>
         <br />
         <div className="chartDiv">
           <div className="select">
@@ -339,9 +377,6 @@ class App extends React.Component {
             </div>
           </div>
         </div>
-        <br />
-        <svg className="barChart"></svg>
-        <br />
         <br />
       </React.Fragment>
     );

@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 
-// ** Update data section (Called from the onclick)
 export const updateData = (data, lineGraphData) => {
+  //https://bl.ocks.org/d3noob/7030f35b72de721622b8
   var tooltip = null;
   if (data.value === "croCases") {
     tooltip = "Hrvatska zaraženi: ";
@@ -115,7 +115,7 @@ export const updateData = (data, lineGraphData) => {
     .data(lineGraphData)
     .enter()
     .append("circle")
-    .attr("r", 5)
+    .attr("r", 4)
     .attr("class", "dots");
 
   fixeddot

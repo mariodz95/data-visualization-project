@@ -1,6 +1,8 @@
 import * as d3 from "d3";
 
 export const lineChart = (data, lineGraphData) => {
+  //Korištena literatura https://bl.ocks.org/d3noob/402dd382a51a4f6eea487f9a35566de0
+  //https://bl.ocks.org/gordlea/27370d1eea8464b04538e6d8ced39e89
   var tooltip = null;
   if (data.value === "croCases") {
     tooltip = "Hrvatska zaraženi: ";
@@ -101,7 +103,7 @@ export const lineChart = (data, lineGraphData) => {
     .data(lineGraphData)
     .enter()
     .append("circle")
-    .attr("r", 5)
+    .attr("r", 4)
     .attr("class", "dots");
 
   fixeddot
