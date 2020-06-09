@@ -34,7 +34,7 @@ class App extends React.Component {
 
   componentDidMount() {
     fetch(
-      "https://cors-anywhere.herokuapp.com/www.koronavirus.hr/json/?action=podaci_zadnji"
+      "https://cors-anywhere.herokuapp.com/https://www.koronavirus.hr/json/?action=podaci_zadnji"
     )
       .then((data) => {
         return data.json();
@@ -44,7 +44,7 @@ class App extends React.Component {
       });
 
     fetch(
-      "https://cors-anywhere.herokuapp.com/www.koronavirus.hr/json/?action=po_danima_zupanijama_zadnji"
+      "https://cors-anywhere.herokuapp.com/https://www.koronavirus.hr/json/?action=po_danima_zupanijama_zadnji"
     )
       .then((data) => {
         return data.json();
@@ -68,7 +68,7 @@ class App extends React.Component {
       });
 
     fetch(
-      "https://cors-anywhere.herokuapp.com/www.koronavirus.hr/json/?action=podaci"
+      "https://cors-anywhere.herokuapp.com/https://www.koronavirus.hr/json/?action=podaci"
     )
       .then((data) => {
         return data.json();
@@ -93,7 +93,7 @@ class App extends React.Component {
       });
 
     fetch(
-      "https://cors-anywhere.herokuapp.com/www.koronavirus.hr/json/?action=po_osobama"
+      "https://cors-anywhere.herokuapp.com/https://www.koronavirus.hr/json/?action=po_osobama"
     )
       .then((data) => {
         return data.json();
@@ -140,7 +140,9 @@ class App extends React.Component {
         drawPieChart(false, false, this.state.covidStatistic);
       });
 
-    fetch("https://www.koronavirus.hr/json/?action=po_danima_zupanijama")
+    fetch(
+      "https://cors-anywhere.herokuapp.com/https://json/?action=po_danima_zupanijama"
+    )
       .then((data) => {
         return data.json();
       })
