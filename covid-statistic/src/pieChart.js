@@ -33,7 +33,7 @@ export const drawPieChart = (update, gender, data) => {
 
   var svg = d3
     .select("body")
-    .select(".pieChart")
+    .select(gender === false ? ".pieChart" : ".pieChartGender")
     .attr("width", width)
     .attr("height", height)
     .append("g")
@@ -95,7 +95,11 @@ export const drawPieChart = (update, gender, data) => {
     .style("font-size", 25);
 
   // select the svg area
-  var SVG = d3.select(".legend");
+  if (gender === false) {
+    var SVG = d3.select(".legend");
+  } else {
+    var SVG = d3.select(".legendGender");
+  }
 
   // Add one dot in the legend for each name.
   var size = 20;

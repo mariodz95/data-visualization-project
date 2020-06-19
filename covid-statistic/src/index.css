@@ -133,12 +133,18 @@ tr {
   clear: both;
 }
 .legend {
-  float: left;
+  float: right;
 }
 .pieChart {
   float: right;
 }
 
+.legendGender {
+  float: left;
+}
+.pieChartGender {
+  float: left;
+}
 div.tooltip {
   position: absolute;
   text-align: center;

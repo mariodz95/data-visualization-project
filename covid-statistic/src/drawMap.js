@@ -4,6 +4,7 @@ import * as topojson from "topojson-client";
 export const drawMap = (props) => {
   //Za iscrtavanje mape korišten je priričnik za LV  i
   //https://mono.software/2017/08/10/d3-js-map-of-croatia/
+
   var opacity = d3.scaleLinear().domain([0, 700]).range([0.4, 1]);
   var width = 960;
   var height = 700;
@@ -24,7 +25,9 @@ export const drawMap = (props) => {
     .attr("height", height)
     .style("background", "#3b3434");
 
-  d3.json("cro_regv3.json").then(function (cro) {
+  d3.json("cro.json").then(function (cro) {
+    console.log("Podaci", cro);
+
     var data = topojson.feature(cro, cro.objects.layer1);
 
     svg

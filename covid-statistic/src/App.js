@@ -43,9 +43,7 @@ class App extends React.Component {
         this.setState({ lastData: data });
       });
 
-    fetch(
-      "https://cors-anywhere.herokuapp.com/https://www.koronavirus.hr/json/?action=po_danima_zupanijama_zadnji"
-    )
+    fetch("https://www.koronavirus.hr/json/?action=po_danima_zupanijama_zadnji")
       .then((data) => {
         return data.json();
       })
@@ -63,6 +61,7 @@ class App extends React.Component {
           );
           this.state.barChartData.push(test);
         }
+        console.log("this.", this.state.dataByState);
         drawMap(this.state.dataByState);
         this.drawBarChart();
       });
@@ -138,15 +137,8 @@ class App extends React.Component {
         covidCase.old = old;
         this.setState({ covidStatistic: covidCase });
         drawPieChart(false, false, this.state.covidStatistic);
+        drawPieChart(false, true, this.state.infectedByGender);
       });
-
-    fetch(
-      "https://cors-anywhere.herokuapp.com/https://json/?action=po_danima_zupanijama"
-    )
-      .then((data) => {
-        return data.json();
-      })
-      .then((data) => {});
   }
 
   drawBarChart = () => {
@@ -272,19 +264,6 @@ class App extends React.Component {
     this.setState({ selectedOption });
     updateData(selectedOption, this.state.lineGraphData);
   };
-
-  updateYearData = () => {
-    this.setState({ gender: false });
-    this.setState({ update: true });
-    drawPieChart(true, false, this.state.covidStatistic);
-  };
-
-  updateGenderData = () => {
-    this.setState({ gender: true });
-    this.setState({ update: true });
-    drawPieChart(true, true, this.state.infectedByGender);
-  };
-
   render() {
     const { selectedOption } = this.state;
     return (
@@ -295,6 +274,10 @@ class App extends React.Component {
           ? this.state.lastData.map((item) => (
               <React.Fragment>
                 <h4 key={item.Datum}>Ažurirano: {item.Datum}</h4>
+                <h4>
+                  Trenutno zaraženih:{" "}
+                  {item.SlucajeviHrvatska - item.IzlijeceniHrvatska}
+                </h4>
                 <table>
                   <tbody className="tableBody">
                     <tr>
@@ -371,20 +354,16 @@ class App extends React.Component {
         <br />
         <div className="chartDiv">
           <h2>Zaraženi-statistika:</h2>
-          <button className="button1" onClick={this.updateYearData}>
-            Godine
-          </button>
-          <button className="button2" onClick={this.updateGenderData}>
-            Spol
-          </button>
-          <br />
           <div className="row">
             <div className="column" id="pie">
               <svg className="pieChart"></svg>
+              <svg className="legend" height={200} width={200}></svg>
             </div>
-            <div className="column" id="legend">
-              <svg className="legend" height={300} width={450}></svg>
+            <div className="column" id="pieGender">
+              <svg className="pieChartGender"></svg>
+              <svg className="legendGender" height={200} width={200}></svg>
             </div>
+            <div className="column" id="legend"></div>
           </div>
         </div>
         <br />
