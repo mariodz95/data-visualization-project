@@ -5,7 +5,7 @@ export const drawMap = (props) => {
   //Za iscrtavanje mape korišten je priričnik za LV  i
   //https://mono.software/2017/08/10/d3-js-map-of-croatia/
 
-  var opacity = d3.scaleLinear().domain([0, 700]).range([0.4, 1]);
+  var opacity = d3.scaleLinear().domain([0, 600]).range([0, 600]);
   var width = 960;
   var height = 700;
 
