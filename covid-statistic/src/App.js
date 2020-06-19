@@ -333,6 +333,8 @@ class App extends React.Component {
           : "No data"}
         <svg className="map"></svg>
         <br />
+        <svg className="mapLegend" height={200} width={600}></svg>
+        <br />
         <svg className="barChart"></svg>
         <br />
         <div className="chartDiv">

@@ -4,10 +4,13 @@ import * as topojson from "topojson-client";
 export const drawMap = (props) => {
   //Za iscrtavanje mape korišten je priričnik za LV  i
   //https://mono.software/2017/08/10/d3-js-map-of-croatia/
-  console.log("zz", props);
-  var opacity = d3.scaleLinear().domain([0, 600]).range([0, 10]);
+  // var opacity = d3.scaleLinear().domain([0, 1000]).range([0, 5]);
   var width = 960;
   var height = 700;
+
+  var SVG = d3.select(".mapLegend");
+  var colorscale = d3.schemePRGn["11"].reverse();
+  var color = d3.scaleQuantize().domain([0, 1000]).range(colorscale);
 
   var projection = d3
     .geoMercator()
@@ -40,17 +43,16 @@ export const drawMap = (props) => {
         return d.id;
       })
       .attr("d", path)
-      .style("fill-opacity", function (d) {
+      .style("fill", function (d) {
         for (let i = 0; i < props.length; i++) {
           if (
             props[i].Zupanija.substring(0, 2) ===
             d.properties.name.substring(0, 2)
           ) {
-            return opacity(props[i].broj_zarazenih);
+            return color(props[i].broj_zarazenih);
           }
         }
       })
-      .style("fill", "red")
       .style("stroke", "gray")
       .style("stroke-width", 1)
       .style("stroke-opacity", 1)
@@ -85,6 +87,52 @@ export const drawMap = (props) => {
         tooltip.transition().duration(500).style("opacity", 0);
       });
   });
+
+  var format = d3.format(".1f");
+  var pallete = SVG.append("g").attr("id", "pallete");
+  var swatch = pallete.selectAll("rect").data(colorscale);
+  swatch
+    .enter()
+    .append("rect")
+    .attr("fill", function (d) {
+      return d;
+    })
+    .attr("x", function (d, i) {
+      return i * 50;
+    })
+    .attr("y", 50)
+    .attr("width", 50)
+    .attr("height", 10);
+
+  var texts = pallete
+    .selectAll("foo")
+    .data(color.range())
+    .enter()
+    .append("text")
+    .attr("font-size", "10px")
+    .attr("text-anchor", "middle")
+    .style("fill", "white")
+    .attr("y", 80)
+    .attr("x", function (d, i) {
+      return i * 50 + 25;
+    })
+    .text(function (d) {
+      return format(color.invertExtent(d)[0]);
+    })
+    .append("tspan")
+    .attr("dy", "1.3em")
+    .attr("x", function (d, i) {
+      return i * 50 + 25;
+    })
+    .text("to")
+    .append("tspan")
+    .attr("dy", "1.3em")
+    .attr("x", function (d, i) {
+      return i * 50 + 25;
+    })
+    .text(function (d) {
+      return format(color.invertExtent(d)[1]);
+    });
 
   var tooltip = d3
     .select("body")
