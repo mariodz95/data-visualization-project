@@ -33,9 +33,7 @@ class App extends React.Component {
   };
 
   componentDidMount() {
-    fetch(
-      "https://cors-anywhere.herokuapp.com/https://www.koronavirus.hr/json/?action=podaci_zadnji"
-    )
+    fetch("https://www.koronavirus.hr/json/?action=podaci_zadnji")
       .then((data) => {
         return data.json();
       })
@@ -66,9 +64,7 @@ class App extends React.Component {
         this.drawBarChart();
       });
 
-    fetch(
-      "https://cors-anywhere.herokuapp.com/https://www.koronavirus.hr/json/?action=podaci"
-    )
+    fetch("https://www.koronavirus.hr/json/?action=podaci")
       .then((data) => {
         return data.json();
       })
@@ -91,9 +87,7 @@ class App extends React.Component {
         lineChart(this.state.selectedOption, this.state.lineGraphData);
       });
 
-    fetch(
-      "https://cors-anywhere.herokuapp.com/https://www.koronavirus.hr/json/?action=po_osobama"
-    )
+    fetch("https://www.koronavirus.hr/json/?action=po_osobama")
       .then((data) => {
         return data.json();
       })
