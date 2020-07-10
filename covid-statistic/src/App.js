@@ -6,7 +6,7 @@ import LineChartData from "./helpers/LineChartData";
 import BarChartData from "./helpers/BarChartData";
 import PieData from "./helpers/PieData";
 import GenderData from "./helpers/GenderData";
-import { lineChart } from "./lineChart";
+import { lineChart } from "./LineChart";
 import { updateData } from "./updateData";
 import { options } from "./helpers/dropDownConstants";
 import covid from "./covid.png";

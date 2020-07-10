@@ -19,7 +19,7 @@ export const lineChart = (data, lineGraphData) => {
   }
 
   // set the dimensions and margins of the graph
-  var margin = { top: 20, right: 20, bottom: 30, left: 100 },
+  var margin = { top: 20, right: 20, bottom: 120, left: 100 },
     width = 1100 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
@@ -129,7 +129,15 @@ export const lineChart = (data, lineGraphData) => {
     .append("g")
     .attr("class", "xaxis")
     .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x));
+    .call(d3.axisBottom(x))
+    .selectAll("text")
+    .style("text-anchor", "end")
+    .style("font-size", "14px")
+    .attr("dx", "-.8em")
+    .attr("dy", ".15em")
+    .attr("transform", function (d) {
+      return "rotate(-65)";
+    });
 
   // Add the Y Axis
   svg.append("g").attr("class", "yaxis").call(d3.axisLeft(y));
